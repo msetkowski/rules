@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.wowbagger</groupId>
 	<artifactId>rules</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2-SNAPSHOT</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -64,7 +64,7 @@
 		<url>https://github.com/msetkowski/rules.git</url>
 		<developerConnection>scm:git:https://github.com/msetkowski/rules.git</developerConnection>
 		<connection>scm:git:https://github.com/msetkowski/rules.git</connection>
-	  <tag>rules-1.0.1</tag>
+	  <tag>HEAD</tag>
   </scm>
 	<name>rules</name>
 	<description>simple utility project with additionally junit rules. Some of those rules come from different blogs and web pages.</description>
