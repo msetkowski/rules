@@ -22,7 +22,7 @@ import org.wowbagger.rules.annotation.Invariants;
  * 
  * Example:
  * <pre>
-    &#064;ClassRule public static InvariantRule invariantRule = new InvariantRule(InvariantTest.class);
+    &#064;ClassRule public static InvariantRule invariantRule = new InvariantRule(InvariantObject.class);
     
     &#064;Invariant(name="counter")
     &#064;Test
@@ -30,15 +30,14 @@ import org.wowbagger.rules.annotation.Invariants;
        int i=0;
     }
 	
-    Correspondent code for InvariantTest contains code like below:
+    Correspondent code for InvariantObject contains code like below:
     &#064;Invariants(
         names={"date","counter"}, 
         descriptions={"some date rules","greater than 0"})
-    class InvariantTest{
+    class InvariantObject{
        ...
 	
  * </pre>
- * @author setkomac
  *
  */
 public class InvariantRule implements TestRule {

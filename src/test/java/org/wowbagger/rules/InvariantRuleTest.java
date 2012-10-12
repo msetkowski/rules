@@ -9,13 +9,13 @@ import org.wowbagger.rules.annotation.Invariants;
 @Invariants(
 		names={"date","counter"}, 
 		descriptions={"some date rules","greater than 0"})
-class InvariantTest{
+class InvariantObject{
 	
 };
 
 public class InvariantRuleTest {
 
-	@ClassRule public static InvariantRule invariantRule = new InvariantRule(InvariantTest.class);
+	@ClassRule public static InvariantRule invariantRule = new InvariantRule(InvariantObject.class);
 	
 	@Invariant(name="counter")
 	@Test
