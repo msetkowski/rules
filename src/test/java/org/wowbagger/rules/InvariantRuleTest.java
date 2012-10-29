@@ -1,5 +1,6 @@
 package org.wowbagger.rules;
 
+import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -20,19 +21,19 @@ public class InvariantRuleTest {
 	@Invariant(name="counter")
 	@Test
 	public void test() {
-		int i=0;
+		Assert.assertTrue(true);
 	}
 	@Ignore
 	@Invariant(name="date")
 	@Test
 	public void testDate() {
-		int i=0;
+		Assert.assertTrue(true);
 	}
 
 	
 	@Invariant(name="date")
 	@Test
 	public void testDateSecond() {
-		int i=0;
+		Assert.assertTrue(true);
 	}
 }
