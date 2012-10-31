@@ -1,5 +1,6 @@
 package org.wowbagger.rules;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
@@ -7,10 +8,9 @@ import junit.framework.AssertionFailedError;
 
 import org.junit.Assert;
 import org.junit.Rule;
-import org.junit.rules.MethodRule;
-import org.junit.runners.model.FrameworkMethod;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.wowbagger.rules.annotation.TestEqualsContract;
 
 
 /**
@@ -24,22 +24,18 @@ import org.wowbagger.rules.annotation.TestEqualsContract;
  *  <li>null comparison</li>
  * </ul>  
  * 
- * Usage: Rule should be defined in test body and one of the tests should be marked with annotation {@link TestEqualsContract}.
+ * Usage: Rule should be as ClassRule.
  * 
  * Example:
  * 
  * <pre>
- * 	&#064;Rule
- *	public FulfillEqualsContractRule&lt;MyObject> rule = new FulfillEqualsContractRule&lt;MyObject>(MyObject.class);
+ * 	&#064;ClassRule
+ *	public static FulfillEqualsContractRule&lt;MyObject> rule = new FulfillEqualsContractRule&lt;MyObject>( new MyObject() );
  *	
- *	&#064;Test
- *	&#064;TestEqualsContract
- *	public void testEqualsContract() {
- *	}
+ *	
  * </pre>
- * 
- * @see TestEqualsContract
- * @see MethodRule
+ *  
+ * @see TestRule
  * @see Rule
  * 
  * @author setkomac
@@ -48,56 +44,37 @@ import org.wowbagger.rules.annotation.TestEqualsContract;
  * <br/> 
 
  */
-@SuppressWarnings("deprecation")
-public class FulfillEqualsContractRule<T> implements MethodRule {
+public class FulfillEqualsContractRule<T> implements TestRule {
 
 	private final static Logger LOGGER = Logger.getLogger(FulfillEqualsContractRule.class.getName());
 	
-	public T field;
-	
-	private Class<T> testObject;
+	private T testObject;
 
-	@SuppressWarnings("unchecked")
-	public FulfillEqualsContractRule()  {
-		try {
-			testObject = (Class<T>) Class.forName(getClass().getField("field").getType().getCanonicalName());
-		} catch (SecurityException e) {
-			LOGGER.severe(e.getMessage());
-		} catch (NoSuchFieldException e) {
-			LOGGER.severe(e.getMessage());
-		} catch (ClassNotFoundException e) {
-			LOGGER.severe(e.getMessage());
-		}
+
+	public FulfillEqualsContractRule(T object)  {
+		testObject = object;		
 	}
 	
-	/**
-	 * @see MethodRule#apply(Statement, FrameworkMethod, Object)
-	 */
-	public Statement apply(Statement base, final FrameworkMethod method, final Object target) {
+	@Override
+	public Statement apply(final Statement base, final Description description) {
 		return new Statement() {
-
 			@Override
-			public void evaluate() throws Throwable {
-				
-				TestEqualsContract contract = method.getAnnotation(TestEqualsContract.class);
-                if (contract == null) {
-                	return;
-                }
+			public void evaluate() throws Throwable {				
 				Method equals = null;
 				try {
-					equals = testObject.getDeclaredMethod("equals",
+					equals = testObject.getClass().getDeclaredMethod("equals",
 							new Object().getClass());
 				} catch (NoSuchMethodException e) {
-					return; // OK class could not implementing equals
+					base.evaluate(); // OK class might not implementing equals - we should proceed
 				}
 				if (equals != null) {
 					// should implement also hashCode
 					try {
-						testObject.getDeclaredMethod("hashCode");
+						testObject.getClass().getDeclaredMethod("hashCode");
 					} catch (NoSuchMethodException e) {
 
 						throw new AssertionFailedError("Class "
-								+ testObject.getName()
+								+ testObject.getClass().getName()
 								+ " implements method equals but hashCode() isn't present!");
 					}
 				}
@@ -107,17 +84,20 @@ public class FulfillEqualsContractRule<T> implements MethodRule {
 				testTransitivity();
 				testConsistency();
 				testNullable();
-				testHashCode();				
+				testHashCode();	
+				
+				base.evaluate();
 			}
 
 			/**
 			 * if x.equals(y) returns true and y.equals(z) returns true, then x.equals(z) should return true.
 			 */
-			private void testTransitivity() throws InstantiationException, IllegalAccessException {
+			@SuppressWarnings("unchecked")
+			private void testTransitivity() throws Exception {
 				LOGGER.info("Transitivity Test");
-				T objectX = testObject.newInstance();
-				T objectY = testObject.newInstance();
-				T objectZ = testObject.newInstance();
+				T objectX = (T) Class.forName(testObject.getClass().getName()).newInstance();
+				T objectY = (T) Class.forName(testObject.getClass().getName()).newInstance();
+				T objectZ = (T) Class.forName(testObject.getClass().getName()).newInstance();
 				boolean resultOne = objectX.equals(objectY);
 				boolean resultTwo = objectY.equals(objectZ);
 				if(resultOne == resultTwo){
@@ -129,10 +109,11 @@ public class FulfillEqualsContractRule<T> implements MethodRule {
 			/**
 			 * equal objects must produce the same hash code
 			 */
-			private void testHashCode() throws InstantiationException, IllegalAccessException {
+			@SuppressWarnings("unchecked")
+			private void testHashCode() throws Exception {
 				LOGGER.info("Hashcode Test");
-				T objectX = testObject.newInstance();
-				T objectY = testObject.newInstance();
+				T objectX = (T) Class.forName(testObject.getClass().getName()).newInstance();
+				T objectY = (T) Class.forName(testObject.getClass().getName()).newInstance();
 				boolean result = objectX.equals(objectY);
 				if(result){
 					Assert.assertTrue("equal objects must produce the same hash code", objectX.hashCode() == objectY.hashCode());
@@ -151,10 +132,11 @@ public class FulfillEqualsContractRule<T> implements MethodRule {
 			/**
 			 * multiple invocations of x.equals(y) consistently return true or consistently return false
 			 */
-			private void testConsistency() throws InstantiationException, IllegalAccessException {
+			@SuppressWarnings("unchecked")
+			private void testConsistency() throws Exception {
 				LOGGER.info("Consistency Test");
-				T objectX = testObject.newInstance();
-				T objectY = testObject.newInstance();
+				T objectX = (T) Class.forName(testObject.getClass().getName()).newInstance();
+				T objectY = (T) Class.forName(testObject.getClass().getName()).newInstance();
 				boolean result = objectX.equals(objectY);
 				Assert.assertEquals(result, objectX.equals(objectY));
 				Assert.assertEquals(result, objectX.equals(objectY));
@@ -165,10 +147,11 @@ public class FulfillEqualsContractRule<T> implements MethodRule {
 			/**
 			 * x.equals(y) and y.equals(x) should give same result
 			 */
-			private void testSymetricaly() throws InstantiationException, IllegalAccessException {
+			@SuppressWarnings("unchecked")
+			private void testSymetricaly() throws Exception {
 				LOGGER.info("Symetricaly Test");
-				T objectX = testObject.newInstance();
-				T objectY = testObject.newInstance();
+				T objectX = (T) Class.forName(testObject.getClass().getName()).newInstance();
+				T objectY = (T) Class.forName(testObject.getClass().getName()).newInstance();
 				boolean result = objectX.equals(objectY);
 				Assert.assertEquals("x.equals(y) and y.equals(x) should give same result", result, objectX.equals(objectY));
 				Assert.assertEquals("x.equals(y) and y.equals(x) should give same result", result, objectY.equals(objectX));
@@ -176,10 +159,15 @@ public class FulfillEqualsContractRule<T> implements MethodRule {
 
 			/**
 			 * x.equals(x) should be true
+			 * @throws NoSuchMethodException 
+			 * @throws InvocationTargetException 
+			 * @throws SecurityException 
+			 * @throws IllegalArgumentException 
 			 */
-			private void testReflexivity() throws InstantiationException, IllegalAccessException {
+			@SuppressWarnings("unchecked")
+			private void testReflexivity() throws Exception {
 				LOGGER.info("Reflexivity Test");
-				T object = testObject.newInstance();
+				T object = (T) Class.forName(testObject.getClass().getName()).newInstance(); 
 				Assert.assertTrue("x.equals(x) should be true", object.equals(object));
 				
 			}

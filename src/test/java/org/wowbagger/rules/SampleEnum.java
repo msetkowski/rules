@@ -1,5 +1,5 @@
 package org.wowbagger.rules;
 
-public enum TestEnum {
+public enum SampleEnum {
 	ONE,TWO;
 }

@@ -6,7 +6,7 @@ class Embedded{
 	
 }
 
-public class TestedObject{
+public class SampleObject{
 	private int integer;
 	private Integer integerObject;
 	private List<String> listString;
@@ -14,14 +14,14 @@ public class TestedObject{
 	private boolean flag;
 	private String ignored;
 	private Embedded embedded;
-	private TestEnum testEnum;
+	private SampleEnum testEnum;
 	
 	
-	public TestEnum getTestEnum() {
+	public SampleEnum getTestEnum() {
 		return testEnum;
 	}
 
-	public void setTestEnum(TestEnum testEnum) {
+	public void setTestEnum(SampleEnum testEnum) {
 		this.testEnum = testEnum;
 	}
 

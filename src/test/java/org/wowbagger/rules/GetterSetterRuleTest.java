@@ -8,7 +8,7 @@ import org.junit.Test;
 public class GetterSetterRuleTest {
 
 	@ClassRule
-	public static GetterSetterRule<TestedObject> tester = new GetterSetterRule<TestedObject>(new TestedObject(), new String[]{"ignored"}, true);
+	public static GetterSetterRule<SampleObject> tester = new GetterSetterRule<SampleObject>(new SampleObject(), new String[]{"ignored"}, true);
 	
 	@Test
 	public void test() {
